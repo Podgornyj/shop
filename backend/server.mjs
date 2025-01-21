@@ -3,7 +3,9 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 
-import authRoutes from './routes/authRoutes.mjs'
+import authRoutes from './routes/authRoutes.mjs';
+import productRoutes from './routes/productRoutes.mjs';
+import cartRoutes from "./routes/cartRoutes.mjs";
 
 dotenv.config();
 
@@ -11,7 +13,9 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-app.use('/api', authRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use("/api/cart", cartRoutes);
 
 mongoose
     .connect(process.env.MONGO_URI)
