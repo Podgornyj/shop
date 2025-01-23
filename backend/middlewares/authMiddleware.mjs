@@ -13,3 +13,10 @@ export const authMiddleware = async (req, res, next) => {
     }
     next();
 }
+
+export const adminMiddleware = (req, res, next) => {
+    if (req.user.role !== "admin") {
+        return res.status(403).json({ message: "Access deny" });
+    }
+    next();
+};

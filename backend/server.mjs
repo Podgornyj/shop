@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import authRoutes from './routes/authRoutes.mjs';
 import productRoutes from './routes/productRoutes.mjs';
 import cartRoutes from "./routes/cartRoutes.mjs";
+import orderRoutes from "./routes/orderRoutes.mjs";
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use("/api/cart", cartRoutes);
+app.use("/api/order", orderRoutes);
 
 mongoose
     .connect(process.env.MONGO_URI)
