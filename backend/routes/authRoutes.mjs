@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 import { User } from "../models/User.mjs";
+import { authMiddleware } from "../middlewares/authMiddleware.mjs";
 
 const router = express.Router();
 
@@ -56,13 +57,29 @@ router.post('/login', async (req, res) => {
     }
 });
 
-router.get('/logout', async (req, res) => {
+router.get('/logout', authMiddleware, async (req, res) => {
     try {
-        if (req.cookies.token) {
-            res.clearCookie('token');
-            return res.status(200).json({ message: 'You are logged out' });
+        res.clearCookie('token');
+        return res.status(200).json({ message: 'You are logged out' });
+
+    } catch (error) {
+        res.status(500).json({ message: "Server Error", error });
+    }
+});
+
+router.post('/change-password', authMiddleware, async (req, res) => {
+    try {
+        const { oldPassword, newPassword } = req.body;
+        const user = await User.findOne({ _id: req.user.id });
+        const isCorrectPassword = await bcrypt.compare(oldPassword, user.password);
+
+        if (!isCorrectPassword) {
+            return res.status(400).json({ message: `Incorrect data` });
         }
-        res.status(400).json({ message: `Bad request` });
+
+        user.password = await bcrypt.hash(newPassword, 10);
+        await user.save();
+        res.status(201).json({ message: "Password was changed" });
 
     } catch (error) {
         res.status(500).json({ message: "Server Error", error });
