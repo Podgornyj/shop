@@ -1,11 +1,16 @@
-import express from "express";
-import { Cart } from "../models/Cart.mjs";
-import { authMiddleware } from "../middlewares/authMiddleware.mjs";
+import express, { Request, Response } from "express";
+import { Cart } from "../models/Cart.js";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { CustomRequest } from "../middlewares/customRequest.js";
 
 const router = express.Router();
 
-router.get("/", authMiddleware, async (req, res) => {
+router.get("/", authMiddleware, async (req: CustomRequest, res: Response) => {
     try {
+        if (!req.user) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
         const cart = await Cart.findOne({ userId: req.user.id }).populate("items.productId");
         res.json(cart || { items: [] });
     } catch (error) {
@@ -13,8 +18,12 @@ router.get("/", authMiddleware, async (req, res) => {
     }
 });
 
-router.post("/add", authMiddleware, async (req, res) => {
+router.post("/add", authMiddleware, async (req: CustomRequest, res: Response) => {
     try {
+        if (!req.user) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
         const { productId, quantity } = req.body;
         let cart = await Cart.findOne({ userId: req.user.id });
 
@@ -36,10 +45,17 @@ router.post("/add", authMiddleware, async (req, res) => {
     }
 });
 
-router.delete("/remove/:productId", authMiddleware, async (req, res) => {
+router.delete("/remove/:productId", authMiddleware, async (req: CustomRequest, res: Response) => {
     try {
+        if (!req.user) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
         let cart = await Cart.findOne({ userId: req.user.id });
-        if (!cart) return res.status(404).json({ message: "Cart not fount" });
+        if (!cart) {
+            res.status(404).json({ message: "Cart not fount" });
+            return;
+        }
 
         cart.items = cart.items.filter((item) => item.productId.toString() !== req.params.productId);
         await cart.save();

@@ -3,10 +3,10 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 
-import authRoutes from './routes/authRoutes.mjs';
-import productRoutes from './routes/productRoutes.mjs';
-import cartRoutes from "./routes/cartRoutes.mjs";
-import orderRoutes from "./routes/orderRoutes.mjs";
+import authRoutes from './routes/authRoutes.js';
+import productRoutes from './routes/productRoutes.js';
+import cartRoutes from "./routes/cartRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
 
 dotenv.config();
 
@@ -20,7 +20,7 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/order", orderRoutes);
 
 mongoose
-    .connect(process.env.MONGO_URI)
+    .connect(process.env.MONGO_URI || "")
     .then(() => console.log("✅ MongoDB connected"))
     .catch((err) => console.error("❌ MongoDB connection error:", err));
 
