@@ -24,10 +24,12 @@
     "typescript": "^5.7.3"
   },
   "dependencies": {
+    "@prisma/client": "^6.2.1",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.9.5"
+    "mongoose": "^8.9.5",
+    "prisma": "^6.2.1"
   }
 }

@@ -19,9 +19,4 @@ app.use('/api/products', productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/order", orderRoutes);
 
-mongoose
-    .connect(process.env.MONGO_URI || "")
-    .then(() => console.log("✅ MongoDB connected"))
-    .catch((err) => console.error("❌ MongoDB connection error:", err));
-
 app.listen(3001, () => console.log("🚀 Server running on port 3001"));

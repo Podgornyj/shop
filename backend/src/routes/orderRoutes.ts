@@ -42,10 +42,10 @@ router.post("/", authMiddleware, async (req: CustomRequest, res: Response) => {
         }
         //todo
         //item.quantity
-        const totalPrice = cart.items.reduce((sum, item) => sum + item.productId.price * item.quantity, 0);
+        const totalPrice = cart.items.reduce((sum, item: any) => sum + item.productId.price * item.quantity, 0);
         const order = new Order({
             userId: req.user.id,
-            items: cart.items.map((item) => ({
+            items: cart.items.map((item: any) => ({
                 productId: item.productId,
                 quantity: item.quantity,
             })),

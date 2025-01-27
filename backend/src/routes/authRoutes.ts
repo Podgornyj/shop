@@ -2,6 +2,8 @@ import express, { Request, Response, Router } from "express";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
+import { prisma } from "../prisma.js";
+
 import { User, IUser } from "../models/User.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 import { CustomRequest } from "../middlewares/customRequest.js";
@@ -11,7 +13,11 @@ const router: Router = express.Router();
 router.post('/register', async (req: Request, res: Response) => {
     try {
         const { username, email, password } = req.body;
-        const isExistUser = await User.findOne({ email });
+        const isExistUser = await prisma.user.findUnique({
+            where: {
+                email
+            }
+        });
         if (isExistUser) {
             res.status(400).json({ message: `User is existed` });
             return;
@@ -19,8 +25,16 @@ router.post('/register', async (req: Request, res: Response) => {
 
         const hashedPassword: string = await bcrypt.hash(password, 10);
 
-        const user: IUser = new User({ username, email, password: hashedPassword });
-        await user.save();
+        const user = await prisma.user.create({
+            data: {
+                username,
+                email,
+                password: hashedPassword
+            }
+        });
+
+        console.log(user)
+
         res.status(201).json({ message: "Success register" });
 
     } catch (error) {
