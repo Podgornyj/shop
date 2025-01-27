@@ -4,7 +4,6 @@ import jwt from 'jsonwebtoken';
 
 import { prisma } from "../prisma.js";
 
-import { User, IUser } from "../models/User.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 import { CustomRequest } from "../middlewares/customRequest.js";
 
@@ -33,8 +32,6 @@ router.post('/register', async (req: Request, res: Response) => {
             }
         });
 
-        console.log(user)
-
         res.status(201).json({ message: "Success register" });
 
     } catch (error) {
@@ -49,7 +46,11 @@ router.post('/login', async (req: Request, res: Response) => {
             return;
         }
         const { email, password } = req.body;
-        const user: IUser | null = await User.findOne({ email });
+        const user = await prisma.user.findUnique({
+            where: {
+                email
+            }
+        })
 
         if (!user) {
             res.status(400).json({ message: `Incorrect data` });
@@ -67,7 +68,7 @@ router.post('/login', async (req: Request, res: Response) => {
             throw new Error("JWT_SECRET is not defined in environment variables");
         }
 
-        const token: string = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1d" });
+        const token: string = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1d" });
         res.cookie('token', token, {
             httpOnly: true,
             sameSite: "strict",
@@ -98,7 +99,11 @@ router.post('/change-password', authMiddleware, async (req: CustomRequest, res: 
             res.status(401).json({ message: "Unauthorized" });
             return;
         }
-        const user = await User.findOne({ _id: req.user.id });
+        const user = await prisma.user.findUnique({
+            where: {
+                id: req.user.id
+            }
+        });
         if (!user) {
             res.status(404).json({ message: "User not found" });
             return;
@@ -110,8 +115,12 @@ router.post('/change-password', authMiddleware, async (req: CustomRequest, res: 
             return;
         }
 
-        user.password = await bcrypt.hash(newPassword, 10);
-        await user.save();
+        const password = await bcrypt.hash(newPassword, 10);
+
+        await prisma.user.update({
+            where: { id: req.user.id },
+            data: { password }
+        })
         res.status(201).json({ message: "Password was changed" });
 
     } catch (error) {
