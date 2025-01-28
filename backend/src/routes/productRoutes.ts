@@ -1,11 +1,12 @@
 import express, { Request, Response } from "express";
-import { Product } from "../models/Product.js";
+
+import { prisma } from "../prisma.js";
 
 const router = express.Router();
 
 router.get("/", async (req: Request, res: Response) => {
     try {
-        const products = await Product.find();
+        const products = await prisma.product.findMany()
         res.json(products);
     } catch (error) {
         res.status(500).json({ message: "Server error", error });
@@ -14,7 +15,11 @@ router.get("/", async (req: Request, res: Response) => {
 
 router.get("/:id", async (req: Request, res: Response) => {
     try {
-        const product = await Product.findById(req.params.id);
+        const product = await prisma.product.findUnique({
+            where: {
+                id: req.params.id
+            }
+        })
         if (!product) {
             res.status(404).json({ message: "Product not found" });
             return;
@@ -28,8 +33,15 @@ router.get("/:id", async (req: Request, res: Response) => {
 router.post("/", async (req: Request, res: Response) => {
     try {
         const { name, description, price, category, stock } = req.body;
-        const product = new Product({ name, description, price, category, stock });
-        await product.save();
+        const product = await prisma.product.create({
+            data: {
+                name,
+                description,
+                price,
+                category,
+                stock
+            }
+        })
         res.status(201).json(product);
     } catch (error) {
         res.status(500).json({ message: "Server error", error });
@@ -38,7 +50,13 @@ router.post("/", async (req: Request, res: Response) => {
 
 router.put("/:id", async (req: Request, res: Response) => {
     try {
-        const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const updatedProduct = await prisma.product.update({
+            where: {
+                id: req.params.id
+            },
+            data: req.body
+        });
+
         if (!updatedProduct) {
             res.status(404).json({ message: "Product not found" });
             return;
@@ -51,7 +69,9 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 router.delete("/:id", async (req: Request, res: Response) => {
     try {
-        const deletedProduct = await Product.findByIdAndDelete(req.params.id);
+        const deletedProduct = await prisma.product.delete({
+            where: { id: req.params.id }
+        });
         if (!deletedProduct) {
             res.status(404).json({ message: "Product not found" });
             return;

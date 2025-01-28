@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
-import { Cart } from "../models/Cart.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 import { CustomRequest } from "../middlewares/customRequest.js";
+import { prisma } from "../prisma.js";
 
 const router = express.Router();
 
@@ -11,7 +11,16 @@ router.get("/", authMiddleware, async (req: CustomRequest, res: Response) => {
             res.status(401).json({ message: "Unauthorized" });
             return;
         }
-        const cart = await Cart.findOne({ userId: req.user.id }).populate("items.productId");
+        const cart = await prisma.cart.findUnique({
+            where: { userId: req.user.id },
+            include: {
+                items: {
+                    include: {
+                        product: true
+                    }
+                }
+            }
+        })
         res.json(cart || { items: [] });
     } catch (error) {
         res.status(500).json({ message: "Server error", error });
@@ -25,21 +34,60 @@ router.post("/add", authMiddleware, async (req: CustomRequest, res: Response) =>
             return;
         }
         const { productId, quantity } = req.body;
-        let cart = await Cart.findOne({ userId: req.user.id });
+        let cart = await prisma.cart.findUnique({
+            where: { userId: req.user.id },
+            include: {
+                items: true
+            }
+        });
 
         if (!cart) {
-            cart = new Cart({ userId: req.user.id, items: [] });
+            cart = await prisma.cart.create({
+                data: {
+                    userId: req.user.id,
+                    items: {
+                        create: [{ productId, quantity }]
+                    }
+                },
+                include: { items: true }
+            })
+            res.json(cart);
+            return
         }
 
-        const itemIndex = cart.items.findIndex((item) => item.productId.toString() === productId);
-        if (itemIndex > -1) {
-            cart.items[itemIndex].quantity += quantity;
+        const existingItem = cart.items.find((item) => item.productId === productId);
+        if (existingItem) {
+            await prisma.cartItem.update({
+                where: { id: existingItem.id },
+                data: { quantity: existingItem.quantity + quantity }
+            })
         } else {
-            cart.items.push({ productId, quantity });
+            await prisma.cartItem.create({
+                data: {
+                    cartId: cart.id,
+                    quantity,
+                    productId
+
+                }
+            });
         }
 
-        await cart.save();
-        res.json(cart);
+        const updatedCart = await prisma.cart.findUnique({
+            where: { userId: req.user.id },
+            include: {
+                items: {
+                    include: {
+                        product: {
+                            select: {
+                                name: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        res.json(updatedCart);
     } catch (error) {
         res.status(500).json({ message: "Server error", error });
     }
@@ -51,16 +99,39 @@ router.delete("/remove/:productId", authMiddleware, async (req: CustomRequest, r
             res.status(401).json({ message: "Unauthorized" });
             return;
         }
-        let cart = await Cart.findOne({ userId: req.user.id });
+        let cart = await prisma.cart.findUnique({
+            where: { userId: req.user.id },
+            include: {
+                items: true
+            }
+        });
         if (!cart) {
             res.status(404).json({ message: "Cart not fount" });
             return;
         }
 
-        cart.items = cart.items.filter((item) => item.productId.toString() !== req.params.productId);
-        await cart.save();
+        const existProduct = cart.items.find((item) => item.productId === req.params.productId);
+        if (!existProduct) {
+            res.status(404).json({ message: `Product (${req.params.productId}) not fount` });
+            return
+        } else {
+            await prisma.cartItem.delete({
+                where: { id: existProduct.id }
+            })
+        }
 
-        res.json(cart);
+        let updatedCart = await prisma.cart.findUnique({
+            where: { userId: req.user.id },
+            include: {
+                items: {
+                    include: {
+                        product: true
+                    }
+                }
+            }
+        });
+
+        res.json(updatedCart);
     } catch (error) {
         res.status(500).json({ message: "Server error", error });
     }
