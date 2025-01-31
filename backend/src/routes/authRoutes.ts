@@ -32,7 +32,7 @@ router.post('/register', async (req: Request, res: Response) => {
             }
         });
 
-        res.status(201).json({ message: "Success register" });
+        res.status(200).json({ message: "Success register" });
 
     } catch (error) {
         res.status(500).json({ message: "Server Error", error });
@@ -71,10 +71,36 @@ router.post('/login', async (req: Request, res: Response) => {
         const token: string = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1d" });
         res.cookie('token', token, {
             httpOnly: true,
-            sameSite: "strict",
+            sameSite: 'none',
+            secure: true,
+            path: '/',
             maxAge: 1 * 24 * 60 * 60 * 1000
         });
-        res.status(201).json({ message: "Success login", user: { username: user.username, email: user.email } });
+        res.status(200).json({ message: "Success login", user: { username: user.username, email: user.email } });
+
+    } catch (error) {
+        res.status(500).json({ message: "Server Error", error });
+    }
+});
+
+router.get('/me', authMiddleware, async (req: CustomRequest, res: Response) => {
+    try {
+        if (!req.user) {
+            res.status(401).json({ message: "Unauthorized" });
+            return;
+        }
+        const user = await prisma.user.findUnique({
+            where: {
+                id: req.user.id
+            }
+        });
+
+        if (!user) {
+            res.status(400).json({ message: `Incorrect data` });
+            return;
+        }
+
+        res.status(200).json({ username: user.username, email: user.email });
 
     } catch (error) {
         res.status(500).json({ message: "Server Error", error });
@@ -121,7 +147,7 @@ router.post('/change-password', authMiddleware, async (req: CustomRequest, res: 
             where: { id: req.user.id },
             data: { password }
         })
-        res.status(201).json({ message: "Password was changed" });
+        res.status(200).json({ message: "Password was changed" });
 
     } catch (error) {
         res.status(500).json({ message: "Server Error", error });

@@ -32,9 +32,25 @@ router.get("/:id", async (req: Request, res: Response) => {
 
 router.post("/", async (req: Request, res: Response) => {
     try {
-        const { name, description, price, category, stock } = req.body;
+        const {
+            name,
+            description,
+            price,
+            category,
+            stock,
+            discount,
+            image,
+            newcollection,
+            hit,
+            discountpercentage
+        } = req.body;
         const product = await prisma.product.create({
             data: {
+                discount,
+                image,
+                newcollection,
+                hit,
+                discountpercentage,
                 name,
                 description,
                 price,
