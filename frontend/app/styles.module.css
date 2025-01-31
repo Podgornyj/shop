@@ -1,0 +1,58 @@
+.container {
+    display: grid;
+    grid-template-areas:
+        "header header"
+        "sidebar main"
+        "footer footer";
+    grid-template-columns: 200px 1fr;
+    grid-template-rows: 50px 1fr 50px;
+    gap: 10px;
+}
+
+/* Бургер-кнопка */
+.burger {
+    display: none;
+    /* По умолчанию скрыта */
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.sidebar {
+    grid-area: sidebar;
+    background-color: lightgreen;
+}
+
+/* Прячем sidebar на мобильных */
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+
+    /* Делаем бургер-кнопку видимой */
+    .burger {
+        display: block;
+    }
+
+    .container {
+        grid-template-areas:
+            "header"
+            "main"
+            "footer";
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Показываем sidebar при нажатии на бургер */
+.show {
+    display: block;
+    position: absolute;
+    top: 50px;
+    left: 0;
+    width: 200px;
+    height: 100vh;
+    background: lightgreen;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+}
