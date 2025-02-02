@@ -1,4 +1,5 @@
 'use client'
+import { useSearchParams } from 'next/navigation'
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -10,9 +11,11 @@ type Inputs = {
 
 
 export default function Login() {
+  const searchParams = useSearchParams();
   const router = useRouter();
-
   const queryClient = useQueryClient();
+
+  const callbackUrl = searchParams.get('callbackUrl') || '/'
 
   const { mutate } = useMutation({
     mutationFn: async (data: Inputs) => {
@@ -28,7 +31,7 @@ export default function Login() {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['user'], data.user);
-      router.push('/');
+      router.push(callbackUrl);
     }
   })
 

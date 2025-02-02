@@ -29,6 +29,7 @@ export function TopBar() {
         },
         onSuccess: (data) => {
             queryClient.setQueryData(['user'], null);
+            router.refresh();
         }
     })
 
@@ -55,12 +56,16 @@ export function TopBar() {
                         <>
                             {
                                 data ?
-                                    <div className='flex gap-2 cursor-pointer' onClick={() => logOutMutation.mutate()}>
+                                    <div className='flex gap-2 cursor-pointer' onClick={() => {
+                                        logOutMutation.mutate();
+                                    }}>
                                         <FiUser className="text-lg cursor-pointer hover:text-gray-200" />
                                         <div>Вийти</div>
                                     </div>
                                     :
-                                    <div className='flex gap-2 cursor-pointer' onClick={() => router.push('/login')}>
+                                    <div className='flex gap-2 cursor-pointer' onClick={() => {
+                                        router.push(`/login?callbackUrl=${encodeURIComponent(window.location.href)}`);
+                                    }}>
                                         <FiUser className="text-lg cursor-pointer hover:text-gray-200" />
                                         <div>Вхід</div>
                                     </div>
@@ -68,7 +73,7 @@ export function TopBar() {
                             }
                             {
                                 data ?
-                                    <div className="flex space-x-1 cursor-pointer">
+                                    <div onClick={() => router.push('/cart')} className="flex space-x-1 cursor-pointer">
                                         <FiShoppingCart className="text-lg cursor-pointer hover:text-gray-200" />
                                         <span>Мій кошик</span>
                                     </div>

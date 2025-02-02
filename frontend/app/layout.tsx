@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Moderustic } from "next/font/google";
 import "./globals.css";
 //Components
 import { TopBar } from "./components/TopBar";
@@ -15,6 +16,12 @@ export const metadata: Metadata = {
   description: "My Shop",
 };
 
+const moderustic = Moderustic({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-moderustic",
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -22,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
+      <body className={moderustic.className}>
         <QueryProvider>
           <AuthProvider>
             <TopBar />
