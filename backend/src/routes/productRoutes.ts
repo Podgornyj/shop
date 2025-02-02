@@ -6,7 +6,16 @@ const router = express.Router();
 
 router.get("/", async (req: Request, res: Response) => {
     try {
-        const products = await prisma.product.findMany()
+        let products = null
+        if (req.query.category) {
+            products = await prisma.product.findMany({
+                where: {
+                    category: req.query.category as string
+                },
+            })
+        } else {
+            products = await prisma.product.findMany()
+        }
         res.json(products);
     } catch (error) {
         res.status(500).json({ message: "Server error", error });
@@ -14,6 +23,7 @@ router.get("/", async (req: Request, res: Response) => {
 });
 
 router.get("/:id", async (req: Request, res: Response) => {
+    // await new Promise((resolve) => setTimeout(resolve, 5000))
     try {
         const product = await prisma.product.findUnique({
             where: {
@@ -32,9 +42,25 @@ router.get("/:id", async (req: Request, res: Response) => {
 
 router.post("/", async (req: Request, res: Response) => {
     try {
-        const { name, description, price, category, stock } = req.body;
+        const {
+            name,
+            description,
+            price,
+            category,
+            stock,
+            discount,
+            image,
+            newcollection,
+            hit,
+            discountpercentage
+        } = req.body;
         const product = await prisma.product.create({
             data: {
+                discount,
+                image,
+                newcollection,
+                hit,
+                discountpercentage,
                 name,
                 description,
                 price,
