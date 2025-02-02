@@ -5,10 +5,13 @@ import {
     FiCheckCircle,
 } from "react-icons/fi";
 //Types
-import { ProductTypes } from "../../types/ProductTypes"
+import { ProductTypes } from "../../types/ProductTypes";
+//Components
+import AddToCard from "../AddToCard";
 
 
 export function ProductCard({ product, clickFn }: { product: ProductTypes, clickFn: () => void }) {
+
     return (
         <div className="bg-white shadow-lg rounded-lg p-4 max-w-xs">
             <div onClick={() => clickFn()} className="relative flex justify-center cursor-pointer">
@@ -31,11 +34,7 @@ export function ProductCard({ product, clickFn }: { product: ProductTypes, click
                 <h3 className="text-lg font-semibold">{product.name}</h3>
                 <p className="text-gray-700 font-bold">{product.price} грн</p>
             </div>
-
-            <button className="mt-4 w-full bg-[#b0bc90] text-white py-2 rounded hover:bg-green-700">
-                Купити
-            </button>
-
+            <AddToCard id={product.id} name={product.name} stock={product.stock} />
             <div className="flex justify-between mt-4 text-gray-500">
                 <button className="flex items-center space-x-2 hover:text-green-600">
                     <FiHeart className="text-xl" />

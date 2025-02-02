@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation'
 //Context
 import { useAuthContext } from "@/app/context/AuthProvider";
 //Queries
-import { addToCard } from "@/app/queries/productQueries";
+import { addToCard } from "@/app/queries/cartQueries";
+//Icons
+import { FiCheckCircle, FiLoader } from "react-icons/fi";
 
 export default function AddToCard({ name, id, stock }: { name: string, id: string, stock: number }) {
 
@@ -16,12 +18,11 @@ export default function AddToCard({ name, id, stock }: { name: string, id: strin
 
     const { isPending, mutate } = addToCard({
         onSuccess: () => {
+            setCount(1);
             setShowPopUp(true);
             setTimeout(() => setShowPopUp(false), 2500);
         }
     });
-
-
 
     const addProductUnit = () => {
         if (count < stock) {
@@ -58,14 +59,21 @@ export default function AddToCard({ name, id, stock }: { name: string, id: strin
                 <div className="flex-1 flex justify-center cursor-pointer select-none" onClick={() => addProductUnit()}>+</div>
             </div>
             <button
-                className="rounded-md pl-4 pr-4 border border-[#b0bc8e] text-[#b0bc8e]"
+                className="flex justify-center items-center rounded-md pl-4 pr-4 border border-[#b0bc8e] text-[#b0bc8e] min-w-[100px]"
                 onClick={() => addToCardProduct()}
-            >{isPending ? 'loading' : 'В кошик'}</button>
+            >{isPending ? <FiLoader /> : 'В кошик'}</button>
             {
                 showPopUp ?
-                    <div className="p-7 flex items-center justify-center fixed top-[20%] left-[50%] min-h-[100px] translate-x-[-50%] bg-gray-100 rounded-md">
-                        <span className="font-black">{name}</span>, додано у кошик
+                    <div
+                        className={`fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-3 text-white text-lg rounded-xl shadow-lg transition-all duration-300 scale-100 bg-green-500`}
+                    >
+                        <div className="flex items-center gap-2">
+                            <FiCheckCircle className="text-white text-2xl" />
+                            <span>Товар додано у кошик</span>
+                        </div>
                     </div> : null
+
+
             }
         </div>
     )

@@ -18,7 +18,7 @@ export type addTocardType = {
     quantity: number
 }
 
-export type CartItem = {
+export type CartItemTypes = {
     cartId: string
     id: string
     productId: string
